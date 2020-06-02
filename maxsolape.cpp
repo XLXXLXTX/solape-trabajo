@@ -64,17 +64,87 @@ tpSolape maxSolFBruta(double inters[N][2], int n){
 	return intervaloSolapamiento;
 }
 
-/*
-void crearvind(double inters[N][2], tpInter indinters[N], int n){
+
+void crearvind(double inters[N][2], tpInter indinters[N], int n){	
+
+	for (int i = 0; i<n; ++i){
+
+		indinters[i].ind = i;
+		indinters[i].ini = inters[i][0];
+		indinters[i].fin = inters[i][1];
+	}
 
 }
-*/
 
-/*
+void merge(tpInter indinters[N], int p, int m, int f){
+
+	tpInter vectorAux [f+1]; // ¿¿¿ Tendria que ser f+1 ???
+
+	int h = p; // Indice "h" que recorre la primera parte del vector indinters[]
+	int i = p; // Indice "i" que recorre el vector llamado vectorAux[]
+	int j = m+1; // indice "j" que recorre la parte derecha del vector indinters[]
+
+	while( (h <= m) && (j <= f) ){
+
+		// Es menor el componente de la mitad izq que el de la der 
+		if(indinters[h].ini <= indinters[j].ini){
+			// por lo que se guardaen vectorAux, y se aumenta 
+			// la componente "h" que recorre  la parte izq
+
+			vectorAux[i] = indinters[h];
+			h++;
+
+		}else{
+			vectorAux[i] = indinters[j];
+			j++;
+		}
+
+		i++;
+	}
+
+	// Si se ha recorrido entera la mitad izq, se guarda la parte 
+	// derecha en el vectoAux ya que estaba ordenada
+	if(h > m){
+
+		for(int k=j; k<=f; k++){
+			vectorAux[i] = indinters[k];
+			i++;
+		}
+	}else{
+	// Si se ha recorrido la parte de la der, se guada la parte 
+	// izquierda en el vectorAux ya que ya estaba ordenada 
+		for(int k=h; k<=m; k++){
+			vectorAux[i] = indinters[k];
+			i++;
+		}
+	}
+
+
+	// Finalmente se copia el vector ya ordenado, al vetor inicial
+	for(int k=p; k<=f; k++){
+		indinters[k] = vectorAux[k];
+	}
+
+}
+
+
 void mergesortIndInters(tpInter indinters[N], int p, int f){
 
+		if(p < f){
+		int mitad = (f + p) / 2;
+
+		// Ordenamos la mitad de la izq
+		mergesortIndInters(indinters, p, mitad);
+		// Ordenamos la mitad de la der
+		mergesortIndInters(indinters, mitad+1, f);
+		// Ahora que estan ambas mitades ordenadas, las tenemos 
+		// que mezclar y ordenaralas 
+		merge(indinters, p, mitad, f);
+						
+	}
+
 }
-*/
+
 
 /*
 tpSolape maxSolDyV(tpInter indinters[N], int p, int f){
