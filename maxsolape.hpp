@@ -8,6 +8,9 @@ const int N = 100000;       // Maximo numero de intervalos
 const double minini = 0;    // Minimo valor de inicio para los intervalos
 const double maxfin = 100;  // Maximo valor de fin para los intervalos
 
+const char NOMBRE_FICHERO_FB []  = "datos-FuerzaBruta.txt";
+const char NOMBRE_SALIDA_FB [] = "grafica-FuerzaBruta.gif";
+
 struct tpSolape{
     int interA, interB; // Indice de los intervalos
     double solape;      // Solape de los intervalos
