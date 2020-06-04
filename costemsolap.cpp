@@ -50,19 +50,39 @@ void crearGrafica (const char nombrefichero [], const char nombreSalida []){
 	system(comando);
 }
 
-/*
-void comprobarIntervalos(double matrizDatos[][2], int n){
-	for(int i=0; i<n; i++){
-		if( (matrizDatos[i][0] < minini || matrizDatos[i][0] > 100) ){
-			cout << "i= " << i <<matrizDatos[i][0] << endl;
-		}
+void analisisDyV(double conjuntoIntervalos[N][2], int sizeConjunto, ofstream& ficheroDyV, int numConjunto){
 
-		if( (matrizDatos[i][1] < minini || matrizDatos[i][1] > 100) ){
-			cout << "i= " << matrizDatos[i][1] << endl;
-		}
-	}
+	tpInter indinters[sizeConjunto];
+			
+	crearvind(conjuntoIntervalos, indinters, sizeConjunto);
+
+	clock_t ticksRelojInicioDYV = clock();
+
+	maxSolDyV(indinters, 0, sizeConjunto-1);
+
+	clock_t ticksRelojFinalDYV = clock();
+
+	double diferenciaDYV = ticksRelojFinalDYV - ticksRelojInicioDYV;
+	double tiempoTotalConjuntoDYV = diferenciaDYV / ( CLOCKS_PER_SEC / 1000);
+
+	ficheroDyV << numConjunto << " " << tiempoTotalConjuntoDYV << endl;
 }
-*/
+
+
+void analisisFB(double conjuntoIntervalos[N][2], int sizeConjunto, ofstream& ficheroFB, int numConjunto){
+
+	clock_t ticksRelojInicioFB = clock();
+
+	maxSolFBruta(conjuntoIntervalos, sizeConjunto);
+
+	clock_t ticksRelojFinalFB = clock();
+
+	double diferenciaFB = ticksRelojFinalFB - ticksRelojInicioFB;
+	double tiempoTotalConjuntoFB = diferenciaFB / ( CLOCKS_PER_SEC / 1000);
+
+	ficheroFB << numConjunto << " " << tiempoTotalConjuntoFB << endl;
+}
+
 
 int main(){
 
@@ -84,35 +104,12 @@ int main(){
 			generarIntervalosAleatorios(conjuntoIntervalos, sizeConjunto);
 
 			//-------ANALISIS FB-------//
-			clock_t ticksRelojInicioFB = clock();
-
-			maxSolFBruta(conjuntoIntervalos, sizeConjunto);
-
-			clock_t ticksRelojFinalFB = clock();
-
-			double diferenciaFB = ticksRelojFinalFB - ticksRelojInicioFB;
-			double tiempoTotalConjuntoFB = diferenciaFB / ( CLOCKS_PER_SEC / 1000);
-
-			ficheroFB << i << " " << tiempoTotalConjuntoFB << endl;
+			analisisFB(conjuntoIntervalos, sizeConjunto, ficheroFB, i);
 
 			//-------ANALISIS DYV-------//
-			tpInter indinters[sizeConjunto];
+			analisisDyV(conjuntoIntervalos, sizeConjunto, ficheroDyV, i);
 			
-			crearvind(conjuntoIntervalos, indinters, sizeConjunto);
-
-			clock_t ticksRelojInicioDYV = clock();
-
-			maxSolDyV(indinters, 0, sizeConjunto-1);
-
-			clock_t ticksRelojFinalDYV = clock();
-
-			double diferenciaDYV = ticksRelojFinalDYV - ticksRelojInicioDYV;
-			double tiempoTotalConjuntoDYV = diferenciaDYV / ( CLOCKS_PER_SEC / 1000);
-
-			ficheroDyV << i << " " << tiempoTotalConjuntoDYV << endl;
-
 			sizeConjunto++;
-			
 		}
 
 		ficheroFB.close();
