@@ -6,8 +6,13 @@
  *          se ejecuta el proyecto
 \********************************************************************************/
 #include <cstring>
+#include <fstream>
 
 #include "maxsolape.hpp"
+
+const int NUM_CONJUNTOS = 4000;
+const int MIN_CONJUNTO = 100;
+const int MAX_CONJUNTO = 4000;
 
 using namespace std;
 
@@ -45,66 +50,91 @@ void crearGrafica (const char nombrefichero [], const char nombreSalida []){
 	system(comando);
 }
 
-
-void probarFB(double intervalos [N][2], int cantidad){
-
-	tpSolape solucion;
-
-	solucion = maxSolFBruta(intervalos, cantidad);
-
-	crearGrafica(NOMBRE_FICHERO_FB, NOMBRE_SALIDA_FB);
-
-	cout << "El solape de los intervalos es " << solucion.solape << endl;
-
-}
-
-void probarMS(double intervalos [N][2], int cantidad, int inicio, int fin){
-
-	tpInter inters [N];
-	crearvind(intervalos, inters, cantidad);
-	
-	cout << "---- SIN ORDENAR ----" << endl;
-	for(int i=0; i<=4; i++){
-		cout << "{ind: " << inters[i].ind <<", ini: " << inters[i].ini << ", fin: "<< inters[i].fin << "}" << endl;
-	}
-
-	mergesortIndInters(inters, inicio, fin);
-
-	cout << "---- ORDENADOS ----" << endl;
-	for(int i=0; i<=4; i++){
-		cout << "{ind: " << inters[i].ind <<", ini: " << inters[i].ini << ", fin: "<< inters[i].fin << "}" << endl;
-	}
-
-}
-
 /*
- *
-void probarDyV(double intervalos [N][2], int cantidad, int inicio, int fin){
+void comprobarIntervalos(double matrizDatos[][2], int n){
+	for(int i=0; i<n; i++){
+		if( (matrizDatos[i][0] < minini || matrizDatos[i][0] > 100) ){
+			cout << "i= " << i <<matrizDatos[i][0] << endl;
+		}
 
-	tpInter inters [N];
-	crearvind(intervalos, inters, cantidad);
-
-	tpSolape solapeDyV = maxSolDyV(inters, inicio, fin);
-
-	cout << "El solape de los intervalos es " << solapeDyV.solape << " | interA: " << solapeDyV.interA << " interB: " << solapeDyV.interB << endl;
-
+		if( (matrizDatos[i][1] < minini || matrizDatos[i][1] > 100) ){
+			cout << "i= " << matrizDatos[i][1] << endl;
+		}
+	}
 }
 */
 
-
 int main(){
 
-	//Intervalos para pruebas
-	//double intervalos [N][2] = { {1.5, 8.0}, {0.0, 4.5}, {2.0, 4.0}, {1.0, 6.0}, {3.5, 7.0} };
+	clock_t ticksRelojInicioMain = clock();
 
-	double intervalos [N][2];
-	generarIntervalosAleatorios(intervalos, 4000);
-	
-	probarFB(intervalos,4000);	
+	ofstream ficheroFB(NOMBRE_FICHERO_FB);
+	ofstream ficheroDyV(NOMBRE_FICHERO_DYV);
 
-	//probarMS(intervalos, 5, 0, 4);
+	if( (ficheroFB.is_open()) && (ficheroDyV.is_open()) ){
 
-	//probarDyV(intervalos, 5, 0, 4);
+		srand (time(NULL));
+
+		int sizeConjunto = 100;
+
+		for(int i=1; i<= NUM_CONJUNTOS; i++){
+
+			double conjuntoIntervalos [sizeConjunto][2];
+
+			generarIntervalosAleatorios(conjuntoIntervalos, sizeConjunto);
+
+			//-------ANALISIS FB-------//
+			clock_t ticksRelojInicioFB = clock();
+
+			maxSolFBruta(conjuntoIntervalos, sizeConjunto);
+
+			clock_t ticksRelojFinalFB = clock();
+
+			double diferenciaFB = ticksRelojFinalFB - ticksRelojInicioFB;
+			double tiempoTotalConjuntoFB = diferenciaFB / ( CLOCKS_PER_SEC / 1000);
+
+			ficheroFB << i << " " << tiempoTotalConjuntoFB << endl;
+
+			//-------ANALISIS DYV-------//
+			tpInter indinters[sizeConjunto];
+			
+			crearvind(conjuntoIntervalos, indinters, sizeConjunto);
+
+			clock_t ticksRelojInicioDYV = clock();
+
+			maxSolDyV(indinters, 0, sizeConjunto-1);
+
+			clock_t ticksRelojFinalDYV = clock();
+
+			double diferenciaDYV = ticksRelojFinalDYV - ticksRelojInicioDYV;
+			double tiempoTotalConjuntoDYV = diferenciaDYV / ( CLOCKS_PER_SEC / 1000);
+
+			ficheroDyV << i << " " << tiempoTotalConjuntoDYV << endl;
+
+			sizeConjunto++;
+			
+		}
+
+		ficheroFB.close();
+		ficheroDyV.close();
+
+		crearGrafica(NOMBRE_FICHERO_FB, NOMBRE_SALIDA_FB);
+		crearGrafica(NOMBRE_FICHERO_DYV, NOMBRE_SALIDA_DYV);
+
+
+	}else{
+		cerr << "ERROR: No se ha podido abrir alguno de los archivos: " << NOMBRE_FICHERO_FB << " o " << NOMBRE_FICHERO_DYV;
+	}
+
+	ficheroFB.close();
+	ficheroDyV.close();
+
+	clock_t ticksRelojFinalMain = clock();
+
+	double diferenciaMain = ticksRelojFinalMain - ticksRelojInicioMain;
+	double tiempoTotalConjuntoMain = diferenciaMain / ( CLOCKS_PER_SEC / 1000);
+
+	cout << "El programa ha tardado " << tiempoTotalConjuntoMain/60000 << " minutos en ejecutarse." << endl;
 
 	return 0;
 }

@@ -5,27 +5,12 @@
  * Resumen: Programa maxsolape.cpp que es el archivo donde se construyen los metodos  
  *          que se definen en maxsolape.hpp
 \********************************************************************************/
-#include <fstream>
 #include "maxsolape.hpp"
 
 using namespace std;
 
-void seleccionarIntervalos(ofstream& fTemp, double tiempo, int intervalo){
-
-	if( (intervalo%5 == 0) && (intervalo != 0) ){
-
-		if(fTemp.is_open()){
-			fTemp << intervalo << " " << tiempo << endl;
-
-		}else{
-			cerr << "El fichero " << NOMBRE_FICHERO_FB << " no se ha podido abrir para escritura." << endl;
-		}
-		
-	}
-}
-
-
 tpSolape calcularSolape(tpInter intervalo1, tpInter intervalo2){
+
 	tpSolape solape; 
 	solape.interA = intervalo1.ind;
 	solape.interB = intervalo2.ind;
@@ -40,19 +25,11 @@ tpSolape calcularSolape(tpInter intervalo1, tpInter intervalo2){
 	}else{
 		solape.solape = 0;
 	}
-
+	
 	return solape;
 }
 
 tpSolape maxSolFBruta(double inters[N][2], int n){
-	
-	//------------------------------------------------------------
-	time_t inicio = time(NULL);
-	clock_t ticksRelojInicio = clock();
-
-	double tiempoCheckpoint = 0;
-	ofstream ficheroEscribir(NOMBRE_FICHERO_FB);
-	//------------------------------------------------------------ 
 
 	tpSolape intervaloSolapamiento;
 	intervaloSolapamiento.solape = 0;
@@ -82,22 +59,7 @@ tpSolape maxSolFBruta(double inters[N][2], int n){
 			
 		}
 	
-	//------------------------------------------------------------
-		clock_t ticksRelojFinal = clock();
-		double diferencia = ticksRelojFinal - ticksRelojInicio;
-		double tiempoTotalIntervalo = ( diferencia) / ( CLOCKS_PER_SEC);
-
-		tiempoCheckpoint += tiempoTotalIntervalo * 1000000; 
-
-		seleccionarIntervalos(ficheroEscribir, tiempoCheckpoint, i);
-
-	//------------------------------------------------------------
-	
 	}
-
-	//------------------------------------------------------------
-	ficheroEscribir.close();
-	//------------------------------------------------------------
 
 	return intervaloSolapamiento;
 }
@@ -157,7 +119,6 @@ void merge(tpInter indinters[N], int p, int m, int f){
 		}
 	}
 
-
 	// Finalmente se copia el vector ya ordenado, al vetor inicial
 	for(int k=p; k<=f; k++){
 		indinters[k] = vectorAux[k];
@@ -168,9 +129,8 @@ void merge(tpInter indinters[N], int p, int m, int f){
 
 void mergesortIndInters(tpInter indinters[N], int p, int f){
 
-		if(p < f){
+	if(p < f){
 		int mitad = (f + p) / 2;
-
 		// Ordenamos la mitad de la izq
 		mergesortIndInters(indinters, p, mitad);
 		// Ordenamos la mitad de la der
@@ -184,47 +144,41 @@ void mergesortIndInters(tpInter indinters[N], int p, int f){
 }
 
 
-/*
- * @@@@@@@@@REVISAR@@@@@@@@@
- *
- * FALLA AL DEVOLVER EL SOLAPE MAX
- *
- * @@@@@@@@@REVISAR@@@@@@@@@
- *
 tpSolape maxSolDyV(tpInter indinters[N], int p, int f){
 
 	tpSolape solapeMax;
 
-	//El solape cuando solo hay un intervalo, es 0 (CERO)
-	if(p == f){
+	if(p == f){	
+		//El solape cuando solo hay un intervalo, es 0 (CERO)
 		solapeMax.interA = indinters[p].ind;
 		solapeMax.interB = indinters[p].ind;
 		solapeMax.solape = 0;
 
 		return solapeMax;
 
-	}else if(p == f-1){
-	//Si hay dos intervalos, se sacan con la funcion de calcularSolape(intervalo1, intervalo2)	
+	}else if(p == f-1){	
+		//Si hay dos intervalos, se calcula el solape
 		solapeMax = calcularSolape(indinters[p], indinters[f]);
 		return solapeMax;
-
 	}else{
-
-		int medio = (p+f)/2;
+		//Calculo del solape mitad izq
+		int medio = (p+f)/2;	
 		solapeMax = maxSolDyV(indinters, p, medio);
 
+		//Calculo solape mitad dcha
 		tpSolape solapeTemp;
 		if(medio+1 < f){
 			solapeTemp = maxSolDyV(indinters, medio+1, f);
-
 
 			if(solapeTemp.solape > solapeMax.solape){
 				solapeMax = solapeTemp;
 			}
 		} 
 
+		//Guardamos el maximo entre el de izq y el de la dcha
+		double maximoMitades = solapeMax.solape; 
 
-		double maximoMitad = solapeMax.solape; 
+		//Calculamos el indice que masyor alcance tiene de la mitad izq
 		int indiceMayorAlcance = p;
 		for(int i = p+1; i <= medio; i++){
 			if(indinters[i].fin > indinters[indiceMayorAlcance].fin){
@@ -232,18 +186,17 @@ tpSolape maxSolDyV(tpInter indinters[N], int p, int f){
 			}
 		}
 
+		//Con ese indice, buscamos el solape mas grande con los inters de la dcha
+		for(int j = medio+1; j <= f; j++){
+			tpSolape mayorSolape = calcularSolape(indinters[indiceMayorAlcance], indinters[j]);
 
-		for(int i = medio+1; i <= f; i++){
-			tpSolape mayorSolape = calcularSolape(indinters[indiceMayorAlcance], indinters[f]);
-
+			//Cogemos el que tenga mayor solape
 			if(mayorSolape.solape > solapeMax.solape){
-				solapeMax.interB = i;
+				solapeMax.interA = indinters[indiceMayorAlcance].ind;
+				solapeMax.interB = j;
 				solapeMax.solape = mayorSolape.solape;
 			}
-		}
-
-		if(maximoMitad < solapeMax.solape){
-			solapeMax.interA = indinters[indiceMayorAlcance].ini;
+			
 		}
 
 		return solapeMax;
@@ -251,4 +204,4 @@ tpSolape maxSolDyV(tpInter indinters[N], int p, int f){
 
 }
 
-*/
+

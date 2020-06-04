@@ -8,4 +8,4 @@ maxsolape.o: maxsolape.cpp maxsolape.hpp
 	$(CC) maxsolape.cpp -c $(CFLAGS)
 clean:
 	rm maxsolape.o costemsolap
-	rm datos-FuerzaBruta.txt grafica-FuerzaBruta.gif
+#	rm datos-FuerzaBruta.txt grafica-FuerzaBruta.gif
